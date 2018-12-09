@@ -8,6 +8,14 @@ const height = window.innerHeight;
 var leftTeam = [];
 var rightTeam = [];
 
+var leftCame = false;
+var rightCame = false;
+var leftBack = false;
+var rightBack = false;
+var leftTurned = false;
+var rightTurned = false;
+var hasGreeted = false;
+
 const teammatesNumber = 3;
 
 var app = new PIXI.Application(width, height);
@@ -26,12 +34,15 @@ function onAssetsLoaded(loader, resources)
     this.pointMeet = new PIXI.Point();
     this.pointStopLeft = new PIXI.Point();
     this.pointStopRight = new PIXI.Point();
-    var leftCame = false;
-    var rightCame = false;
-    var leftBack = false;
-    var rightBack = false;
-    var leftTurned = false;
-    var rightTurned = false;
+    this.messageLeft = new PIXI.Sprite.fromImage('../res/hi.png');
+    this.messageRight = new PIXI.Sprite.fromImage('../res/hi.png');
+    this.messageLeft.alpha = 0;
+    this.messageRight.alpha = 0;
+    this.messageLeft.scale.set(0.1);
+    this.messageRight.scale.set(0.1);
+    app.stage.addChild(this.messageLeft);
+    app.stage.addChild(this.messageRight);
+
     this.pointMeet.x = 800;
     this.pointMeet.y = 450;
     this.pointStopLeft.x = this.pointMeet.x / 1.15;
@@ -67,8 +78,6 @@ function onAssetsLoaded(loader, resources)
 
         app.stage.addChild(this.heroLeft);
 
-        this.heroLeft.state.setAnimation(0, 'idle', true);
-
         leftTeam.push(this.heroLeft);
     }
 
@@ -95,53 +104,41 @@ function onAssetsLoaded(loader, resources)
 
         app.stage.addChild(this.heroRight);
 
-        this.heroRight.state.setAnimation(0, 'idle', true);
-
         rightTeam.push(this.heroRight);
     }
 
     this.randLeft = leftTeam[Math.floor(Math.random() * leftTeam.length)];
     this.randRight = rightTeam[Math.floor(Math.random() * rightTeam.length)];
 
-    function stopLeft()
-    {
-        this.randLeft.state.addAnimation(0, 'idle', true);
-    }
-
-    function stopRight()
-    {
-        this.randRight.state.addAnimation(0, 'idle', true);
-    }
-
-    function Turn()
-    {
-        this.randLeft.skeleton.flipX = true;
-        this.randRight.skeleton.flipX = false;
-    }
-
     function moveLeft()
     {
         this.startXLeft = this.randLeft.x;
         this.startYLeft = this.randLeft.y;
-        this.randLeft.state.setAnimation(0, 'walk', true);
         app.ticker.add(() => {
             this.randLeft.x += (Math.floor(this.pointMeet.x / 1.15) - this.randLeft.x) * 0.008;
             this.randLeft.y += (Math.floor(this.pointMeet.y * 1.15) - this.randLeft.y) * 0.008;
 
             if((this.randLeft.x >= Math.floor(this.pointStopLeft.x - 10)))
             {
-                stopLeft();
                 leftCame = true;
             }
 
             if(rightCame && leftCame)
             {
-                //shootLeft();
-
                 this.randLeft.x += 0;
                 this.randLeft.y += 0;
 
+                this.messageLeft.x = this.randLeft.x - 50;
+                this.messageLeft.y = this.randLeft.y - 300;
+
+                this.messageLeft.alpha = 1;
+
                 setTimeout(backLeft, 4000);
+            }
+
+            if(hasGreeted)
+            {
+                this.messageLeft.alpha = 0;
             }
 
             if(leftBack)
@@ -164,25 +161,31 @@ function onAssetsLoaded(loader, resources)
     {
         this.startXRight = this.randRight.x;
         this.startYRight = this.randRight.y;
-        this.randRight.state.setAnimation(0, 'walk', true);
         app.ticker.add(() => {
             this.randRight.x += (Math.floor(this.pointMeet.x * 1.15) - this.randRight.x) * 0.008;
             this.randRight.y += (Math.floor(this.pointMeet.y * 1.15) - this.randRight.y) * 0.008;
 
             if((this.randRight.x <= Math.floor(this.pointStopRight.x + 10)))
             {
-                stopRight();
                 rightCame = true;
             }
 
             if(leftCame && rightCame)
             {
-                //shootRight();
+                this.messageRight.x = this.randRight.x - 50;
+                this.messageRight.y = this.randRight.y - 300;
+
+                this.messageRight.alpha = 1;
 
                 this.randRight.x += 0;
                 this.randRight.y += 0;
 
                 setTimeout(backRight, 4000);
+            }
+
+            if(hasGreeted)
+            {
+                this.messageRight.alpha = 0;
             }
 
             if(rightBack)
@@ -201,19 +204,8 @@ function onAssetsLoaded(loader, resources)
         });
     }
 
-    function shootLeft()
-    {
-        this.randLeft.state.addAnimation(0, 'shoot', false);
-    }
-
-    function shootRight()
-    {
-        this.randRight.state.addAnimation(0, 'shoot', false);
-    }
-
     function backLeft()
     {
-        this.randLeft.state.addAnimation(1, 'walk', true);
         this.randLeft.skeleton.flipX = true;
         this.randLeft.x -= (Math.floor(this.pointMeet.x / 1.15) - this.startXLeft) * 0.008;
         this.randLeft.y -= (Math.floor(this.pointMeet.y * 1.15) - this.startYLeft) * 0.008;
@@ -222,11 +214,12 @@ function onAssetsLoaded(loader, resources)
         {
             leftBack = true;
         }
+
+        hasGreeted = true;
     }
 
     function backRight()
     {
-        this.randRight.state.addAnimation(1, 'walk', true);
         this.randRight.skeleton.flipX = false;
         this.randRight.x += (- Math.floor(this.pointMeet.x * 1.15) + this.startXRight) * 0.008;
         this.randRight.y += (- Math.floor(this.pointMeet.y * 1.15) + this.startYRight) * 0.008;
@@ -235,6 +228,8 @@ function onAssetsLoaded(loader, resources)
         {
             rightBack = true;
         }
+
+        hasGreeted = true;
     }
 
     setTimeout(moveLeft, 3000);
