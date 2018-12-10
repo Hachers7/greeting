@@ -10,8 +10,6 @@ var leftCame = false;
 var rightCame = false;
 var leftBack = false;
 var rightBack = false;
-var leftTurned = false;
-var rightTurned = false;
 var hasGreeted = false;
 
 const teammatesNumber = 3;
@@ -98,6 +96,9 @@ function onAssetsLoaded(loader, resources)
         app.stage.addChild(this.heroLeft);
         app.stage.addChild(this.heroRight);
 
+        this.heroLeft.state.setAnimation(0, 'idle', true);
+        this.heroRight.state.setAnimation(0, 'idle', true);
+
         leftTeam.push(this.heroLeft);
         rightTeam.push(this.heroRight);
     }
@@ -113,24 +114,28 @@ function moveLeft()
 {
     this.startXLeft = this.randLeft.x;
     this.startYLeft = this.randLeft.y;
+    this.randLeft.state.setAnimation(0, 'idle', true);
+    this.randLeft.state.setAnimation(1, 'walk', true);
+    this.randLeft.state.tracks[0].alpha = 0;
     app.ticker.add(() => {
         this.randLeft.x += (Math.floor(this.pointMeet.x / 1.15) - this.randLeft.x) * 0.008;
         this.randLeft.y += (Math.floor(this.pointMeet.y * 1.15) - this.randLeft.y) * 0.008;
 
         if((this.randLeft.x >= Math.floor(this.pointStopLeft.x - 10)))
         {
+            stopLeft();
             leftCame = true;
         }
 
         if(rightCame && leftCame)
         {
-            this.randLeft.x += 0;
-            this.randLeft.y += 0;
-
             this.messageLeft.x = this.randLeft.x - 50;
             this.messageLeft.y = this.randLeft.y - 300;
 
             this.messageLeft.alpha = 1;
+
+            this.randLeft.x += 0;
+            this.randLeft.y += 0;
 
             setTimeout(backLeft, 4000);
         }
@@ -145,13 +150,7 @@ function moveLeft()
             this.randLeft.skeleton.flipX = false;
             this.randLeft.x = this.startXLeft;
             this.randLeft.y = this.startYLeft;
-            if(rightTurned)
-            {
-                app.ticker.stop();
-            }
-            else{
-                leftTurned = true;
-            }
+            stopLeft();
         }
     });
 }
@@ -160,12 +159,16 @@ function moveRight()
 {
     this.startXRight = this.randRight.x;
     this.startYRight = this.randRight.y;
+    this.randRight.state.setAnimation(0, 'idle', true);
+    this.randRight.state.setAnimation(1, 'walk', true);
+    this.randRight.state.tracks[0].alpha = 0;
     app.ticker.add(() => {
         this.randRight.x += (Math.floor(this.pointMeet.x * 1.15) - this.randRight.x) * 0.008;
         this.randRight.y += (Math.floor(this.pointMeet.y * 1.15) - this.randRight.y) * 0.008;
 
         if((this.randRight.x <= Math.floor(this.pointStopRight.x + 10)))
         {
+            stopRight();
             rightCame = true;
         }
 
@@ -192,19 +195,27 @@ function moveRight()
             this.randRight.skeleton.flipX = true;
             this.randRight.x = this.startXRight;
             this.randRight.y = this.startYRight;
-            if(leftTurned)
-            {
-                app.ticker.stop();
-            }
-            else{
-                rightTurned = true;
-            }
+            stopRight();
         }
     });
 }
 
+function stopLeft()
+{
+    this.randLeft.state.tracks[1].alpha = 0;
+    this.randLeft.state.tracks[0].alpha = 1;
+}
+
+function stopRight()
+{
+    this.randRight.state.tracks[1].alpha = 0;
+    this.randRight.state.tracks[0].alpha = 1;
+}
+
 function backLeft()
 {
+    this.randLeft.state.tracks[0].alpha = 0;
+    this.randLeft.state.tracks[1].alpha = 1;
     this.randLeft.skeleton.flipX = true;
     this.randLeft.x -= (Math.floor(this.pointMeet.x / 1.15) - this.startXLeft) * 0.008;
     this.randLeft.y -= (Math.floor(this.pointMeet.y * 1.15) - this.startYLeft) * 0.008;
@@ -219,6 +230,8 @@ function backLeft()
 
 function backRight()
 {
+    this.randRight.state.tracks[0].alpha = 0;
+    this.randRight.state.tracks[1].alpha = 1;
     this.randRight.skeleton.flipX = false;
     this.randRight.x += (- Math.floor(this.pointMeet.x * 1.15) + this.startXRight) * 0.008;
     this.randRight.y += (- Math.floor(this.pointMeet.y * 1.15) + this.startYRight) * 0.008;
