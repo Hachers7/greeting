@@ -4,9 +4,7 @@ To set up project write in the console (git bash or terminal) inside the project
 1. npm install pixi.js
 2. npm install pixi-spine
 3. npm install --save-dev webpack
-4. npm install lodash
-5. npm install resource-loader
-6. npm install -g local-web-server
+4. npm install -g local-web-server
 
 To run static version:
 1. You need to have <b>static.js</b> as <b>entry</b> inside <b>webpack.config.js</b>
